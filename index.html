@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ff5000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="凑单计算器">
+<meta name="description" content="淘宝/天猫跨店满减凑单计算器：算出最划算的凑单方案，支持88VIP、红包、运费券、目标金额反查。手机电脑都能用，离线可用。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5000'/%3E%3Ctext x='32' y='45' font-size='36' text-anchor='middle' fill='white' font-family='sans-serif'%3E%E7%B0%91%3C/text%3E%3C/svg%3E">
+<title>凑单计算器 · 淘宝/天猫跨店满减</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --line:#e8eaee; --text:#1f2329;
+    --sub:#6b7280; --accent:#ff5000; --accent-soft:#fff4ef;
+    --green:#0a9b62; --green-soft:#eefaf3; --warn:#b45309; --warn-soft:#fffbeb;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Segoe UI,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 16px 80px}
+  header{margin-bottom:20px}
+  h1{font-size:24px;margin:0 0 6px}
+  .sub{color:var(--sub);margin:0;font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 18px 16px;margin-bottom:14px;box-shadow:0 1px 2px rgba(16,24,40,.04)}
+  .card h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
+  .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+    border-radius:7px;background:var(--accent);color:#fff;font-size:13px;font-weight:600;flex:none}
+  .hint{color:var(--sub);font-size:13px;margin:0 0 12px}
+  code{background:#f1f2f5;border-radius:5px;padding:1px 5px;font-size:12.5px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  input,select,textarea,button{font:inherit;color:inherit}
+  input,select,textarea{border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:#fff;outline:none;min-width:0}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .wname{flex:1 1 auto}
+  input[type=number]{text-align:right}
+  .wprice,.wqty{width:88px;flex:none}
+  textarea{width:100%;resize:vertical;font-size:14px;line-height:1.7}
+  .del{border:none;background:#f2f3f5;color:var(--sub);border-radius:9px;width:34px;height:36px;
+    cursor:pointer;flex:none;font-size:17px;line-height:1}
+  .del:hover{background:#ffe9e3;color:var(--accent)}
+  .ghost{background:#fff;border:1px dashed #cfd4dc;color:var(--sub);border-radius:9px;
+    padding:7px 12px;cursor:pointer;font-size:13.5px}
+  .ghost:hover{border-color:var(--accent);color:var(--accent)}
+  .primary{display:block;width:100%;background:var(--accent);color:#fff;border:none;border-radius:12px;
+    padding:14px;font-size:16px;font-weight:600;cursor:pointer;margin:2px 0 16px;
+    box-shadow:0 4px 14px rgba(255,80,0,.28)}
+  .primary:hover{filter:brightness(1.05)}
+  .total{text-align:right;font-size:14px;color:var(--sub);margin-top:6px}
+  .total b{color:var(--text);font-size:17px}
+  .row-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .inline{font-size:13.5px;color:var(--sub);display:flex;align-items:center;gap:6px}
+  .inline input{width:64px}
+  .warn{background:var(--warn-soft);border:1px solid #fde68a;color:var(--warn);
+    border-radius:9px;padding:8px 11px;font-size:13.5px;margin:8px 0}
+  .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .stat{background:#fafbfc;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+  .stat span{display:block;color:var(--sub);font-size:12.5px}
+  .stat b{font-size:16px}
+  .stat em{display:block;font-style:normal;color:var(--green);font-size:12px}
+  .big{font-size:15px;margin:0 0 12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+  .big b{font-size:26px;color:var(--accent)}
+  .big s{color:var(--sub)}
+  .save{background:var(--green-soft);color:var(--green);border-radius:20px;padding:2px 10px;font-size:13.5px;font-weight:600}
+  .combo{list-style:none;padding:0;margin:0 0 12px}
+  .combo li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .combo li:last-child{border-bottom:none}
+  .combo .name{color:var(--sub);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .combo .val{flex:none;font-variant-numeric:tabular-nums}
+  .tag{font-size:12px;font-weight:600;color:var(--green);background:var(--green-soft);
+    border-radius:6px;padding:2px 7px}
+  .tag.alt{color:var(--accent);background:var(--accent-soft)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap;
+    font-variant-numeric:tabular-nums}
+  th{color:var(--sub);font-weight:500;font-size:12.5px}
+  th:first-child,td:first-child{text-align:left;white-space:normal}
+  tbody tr:hover{background:#fafbfc}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--sub);font-size:13.5px;outline:none}
+  .kv{font-size:13.5px;color:var(--sub);margin-top:8px;line-height:1.9}
+  .kv b{color:var(--text);font-weight:600}
+  .footer{color:var(--sub);font-size:12.5px;text-align:center;margin-top:22px}
+  /* 表格横向滚动（手机上列多放不下） */
+  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -2px}
+  .tbl table{min-width:520px}
+  .scroll-hint{color:var(--sub);font-size:12px;margin:6px 0 0}
+  /* 结果操作条 */
+  .copybar{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+  .copybar .ghost{flex:1 1 auto;text-align:center;padding:10px 12px}
+  .howto{font-size:13.5px;color:var(--sub);line-height:1.95}
+  .howto b{color:var(--text)}
+  .howto ol{margin:6px 0 0;padding-left:20px}
+  .howto li{margin-bottom:6px}
+  /* 表单栅格（88VIP / 红包 / 运费） */
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px}
+  .field{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--sub)}
+  .field input,.field select{width:100%}
+  .field.chk{flex-direction:row;align-items:center;gap:8px;font-size:14px;color:var(--text);
+    border:1px solid var(--line);border-radius:9px;padding:9px 10px}
+  .field.chk input{width:auto;transform:scale(1.25)}
+  .sep{border:none;border-top:1px dashed var(--line);margin:14px 0}
+  /* 模板 */
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+  .chip{background:#fff;border:1px solid var(--line);border-radius:20px;padding:7px 12px;
+    font-size:13px;cursor:pointer;color:var(--text)}
+  .chip:hover{border-color:var(--accent);color:var(--accent)}
+  .chip.mine{background:var(--accent-soft);border-color:#ffd6c2}
+  .chip .x{margin-left:7px;color:var(--sub);font-weight:600}
+  /* 结论 */
+  .advice{display:flex;flex-direction:column;gap:8px}
+  .advice div{border:1px solid var(--line);background:#fafbfc;border-radius:10px;padding:10px 12px;font-size:14px;line-height:1.7}
+  .advice .hi{border-color:#ffd6c2;background:var(--accent-soft)}
+  .advice .good{border-color:#bfe8d3;background:var(--green-soft)}
+  .advice .bad{border-color:#fde68a;background:var(--warn-soft)}
+  @media (max-width:560px){
+    .wrap{padding:18px 12px 40px}
+    h1{font-size:21px}
+    .card{padding:15px 14px 13px;border-radius:12px}
+    /* 输入框 16px 以上，iOS 聚焦时才不会自动放大页面 */
+    input,select,textarea{font-size:16px}
+    textarea{font-size:15px}
+    /* 商品行：名称占一整行，价格/数量/删除排第二行，避免挤成一团 */
+    .wanted-row,.rule-row{flex-wrap:wrap;gap:8px}
+    .wname,.rule-row .rscope{flex:1 1 100%}
+    .wprice{flex:1 1 90px;width:auto}
+    .wqty{flex:0 0 74px;width:auto}
+    .rule-row .rtext{flex:1 1 auto}
+    .del{width:44px;height:44px;font-size:19px;border-radius:10px}
+    input,select{padding:11px 10px}
+    .ghost{padding:11px 14px;font-size:14px}
+    .inline{padding:6px 0}
+    .inline input{width:74px}
+    .chip{padding:9px 13px;font-size:13.5px}
+    .fields{grid-template-columns:1fr 1fr}
+    .field.chk{grid-column:1/-1}
+    .field input,.field select{padding:11px 10px}
+    /* 计算按钮吸底，拇指够得到 */
+    .primary{position:sticky;bottom:calc(10px + env(safe-area-inset-bottom));
+      z-index:20;padding:16px;font-size:17px;margin:6px 0 14px}
+    .stats{grid-template-columns:repeat(2,1fr);gap:8px}
+    .big b{font-size:23px}
+    .stat b{font-size:15px}
+    .tag{font-size:11.5px}
+    .howto ol{padding-left:18px}
+  }
+  @media (max-width:360px){
+    .stats{grid-template-columns:1fr}
+    .fields{grid-template-columns:1fr}
+  }
+  @media (prefers-color-scheme:dark){
+    /* 夜里刷手机不刺眼（保留品牌色） */
+    :root{--bg:#14161a;--card:#1c1f24;--line:#2c3138;--text:#e8eaee;--sub:#9aa3ad;
+      --accent-soft:#3a1f14;--green-soft:#12291f;--warn-soft:#2c2413}
+    code{background:#262a31}
+    .stat,.advice div,.chip{background:#22262c}
+    tbody tr:hover{background:#22262c}
+    .del{background:#262a31}
+    input,select,textarea{background:#22262c}
+    .advice .hi{background:var(--accent-soft)}
+    .advice .good{background:var(--green-soft)}
+    .advice .bad{background:var(--warn-soft)}
+  }
+  /* 打印 / 存 PDF：只留结论，去掉输入区和按钮 */
+  @media print{
+    body{background:#fff}
+    .wrap{padding:0;max-width:none}
+    .wrap > .card,.primary,.copybar,.footer,details,.scroll-hint{display:none !important}
+    #result .card{box-shadow:none;border-color:#ddd;break-inside:avoid;page-break-inside:avoid}
+    .tbl{overflow:visible}
+    .tbl table{min-width:0}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧮 凑单计算器</h1>
+    <p class="sub">淘宝 / 天猫 跨店满减 · 告诉我你想要什么、能凑什么，算出最划算的买法</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="n">📋</span>一键导入（可选，省打字）</h2>
+    <p class="hint">把淘宝/京东的<b>分享文案</b>或<b>优惠券文案</b>整段粘进来，自动认出商品名、价格（文案里带 ¥ 才认得出）和满减规则。
+      只有链接、没有价格时，价格需要你从商品页补一下。</p>
+    <textarea id="pasteBox" rows="4" placeholder="【淘宝】https://m.tb.cn/h.xxxx &nbsp;「商品标题」点击链接直接打开&#10;跨店满减：每满300减50，可叠加店铺券满199减20&#10;到手价 ¥129.00"></textarea>
+    <div class="row-btns">
+      <button class="ghost" id="parsePaste">解析并填入</button>
+      <button class="ghost" id="clearPaste">清空</button>
+    </div>
+    <p class="hint" id="pasteInfo" style="margin:8px 0 0"></p>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">1</span>我想要的东西</h2>
+    <div id="wantedList"></div>
+    <button class="ghost" id="addWanted">+ 添加商品</button>
+    <div class="total">合计 <b id="wantedTotal">¥0.00</b></div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span>优惠规则</h2>
+    <p class="hint">支持写法：<code>每满300减40</code>　<code>满199减20</code>　<code>满300减40,满600减90</code>（阶梯）　<code>无门槛减10</code>。
+      范围选「仅想要」= 该优惠只按你想要的商品金额算门槛（店铺券 / 品类券常见）。</p>
+    <div id="templateChips" class="chips"></div>
+    <div id="ruleList"></div>
+    <div class="row-btns">
+      <button class="ghost" id="addRule">+ 添加规则</button>
+      <button class="ghost" id="saveTemplate">⭐ 把当前规则存成模板</button>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span>凑单池（能拿来凑单的东西）</h2>
+    <p class="hint">每行一个：<code>纸巾 9.9</code>，也可以只写价格 <code>19.9</code>。手机上懒得换行，用逗号隔开也行：<code>5, 9.9, 12, 15</code>。</p>
+    <textarea id="pool" rows="6" placeholder="纸巾 9.9&#10;垃圾袋 12.5&#10;19.9&#10;袜子 25"></textarea>
+    <div class="row-btns">
+      <button class="ghost" id="presetBtn">填入常见凑单价格</button>
+      <button class="ghost" id="clearPoolBtn">清空</button>
+      <label class="inline">最多凑单件数 <input id="maxItems" type="number" inputmode="numeric" min="1" max="20" value="6"></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">4</span>其他优惠（选填）</h2>
+    <p class="hint">不填就是纯跨店满减。<b>88VIP 折扣先算</b>，满减按折后金额算门槛；<b>红包在满减后</b>按商品金额比例分摊。</p>
+    <div class="fields">
+      <label class="field chk"><input type="checkbox" id="vipOn"><span>启用 88VIP 折扣</span></label>
+      <label class="field"><span>折扣（95 = 95折）</span><input id="vipOff" type="number" inputmode="decimal" min="50" max="100" step="1" value="95"></label>
+      <label class="field"><span>88VIP 适用范围</span>
+        <select id="vipScope">
+          <option value="all">全部商品</option>
+          <option value="wanted">仅想要的</option>
+          <option value="filler">仅凑单物</option>
+        </select>
+      </label>
+      <label class="field"><span>红包金额（元）</span><input id="rmbAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
+      <label class="field"><span>红包适用范围</span>
+        <select id="rmbScope">
+          <option value="all">全部商品</option>
+          <option value="wanted">仅想要的</option>
+        </select>
+      </label>
+      <label class="field"><span>整单运费（元）</span><input id="shipFee" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
+      <label class="field"><span>运费券抵扣（元）</span><input id="shipCoupon" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
+      <label class="field"><span>凑单物退货运费（元，方案A）</span><input id="returnShip" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></label>
+    </div>
+    <hr class="sep">
+    <p class="hint" style="margin-bottom:8px">🎯 <b>只想凑到某个金额？</b>填目标，直接反查最接近的凑单组合。</p>
+    <div class="fields">
+      <label class="field"><span>目标金额（元）</span><input id="targetAmt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="留空则不反查"></label>
+      <label class="field"><span>这个金额是指</span>
+        <select id="targetMode">
+          <option value="filler">凑单金额</option>
+          <option value="order">订单总额</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <button class="primary" id="calcBtn">开始计算</button>
+  <div id="result"></div>
+
+  <section class="card">
+    <details>
+      <summary><b style="color:var(--text)">📤 怎么发给别人用（手机 / 电脑）</b></summary>
+      <div class="howto">
+        这个文件是<b>单独的、不联网也能用</b>的网页，整个发给对方就行，对方不用装任何东西。
+        <ol>
+          <li><b>电脑（最省事）</b>：双击文件，用浏览器打开即可。也可以直接发给对方，对方双击就能用。</li>
+          <li><b>安卓手机</b>：微信/QQ 收到文件 → 点右上角 <b>···</b> → <b>用其他应用打开</b> → 选「浏览器」。打开后可以「添加到主屏幕」，以后像 App 一样点开就用。</li>
+          <li><b>iPhone</b>：微信里点开文件 → <b>分享</b> → <b>存储到文件</b>。注意「文件」App 里的预览有时只显示代码或不执行脚本，<b>点不动就属于这种情况，不是文件坏了</b>，改用下面第 4 条发链接最稳。</li>
+          <li><b>想让对方在微信里点一下就能用（推荐）</b>：把它变成一个网址。文件不依赖任何后台服务，传到任意免费静态托管即可：GitHub Pages、Netlify Drop、Cloudflare Pages，或你自己的服务器 / 对象存储。拿到链接发出去，手机电脑点开就是完整功能。整个文件只有 <b>约 45KB</b>，上传没有任何门槛。</li>
+          <li><b>临时分享给同一个 WiFi 下的人</b>：在文件所在文件夹执行 <code>python3 -m http.server 8000</code>，再让对方访问 <code>http://你的电脑IP:8000/凑单计算器.html</code>（IP 在「系统设置 → 网络」里看）。只在自己电脑开着时才有效。</li>
+        </ol>
+        小提示：填过的内容只存在使用者自己的手机/电脑里，不会上传到任何地方；换设备不会同步。
+      </div>
+    </details>
+  </section>
+
+  <p class="footer">仅做金额测算，实际到手价以结算页为准 · 数据只存在你自己的浏览器里</p>
+</div>
+
+<script>
+/* =========================================================================
+   凑单求解器（纯函数，可独立测试）
+   金额一律用「分」做整数运算，避免浮点误差
+   ========================================================================= */
+var INF = 1e9;
+
+function toCents(x){
+  var n = Number(x);
+  return isFinite(n) ? Math.round(n * 100) : 0;
+}
+function money(c){
+  var neg = c < 0, s = (Math.round(Math.abs(c)) / 100).toFixed(2).split('.');
+  return (neg ? '-' : '') + '¥' + s[0].replace(/\B(?=(\d{3})+$)/g, ',') + '.' + s[1];
+}
+function pct(x){ return (x * 100).toFixed(1) + '%'; }
+function esc(s){
+  return String(s).replace(/[&<>"']/g, function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+  });
+}
+
+/* ---- 文本解析 ---- */
+
+// 凑单池：每行「名称 价格」或「价格」；也支持逗号/顿号分隔，方便手机上快速输入
+function parsePool(text){
+  var out = [];
+  var push = function(s){
+    var m = s.match(/(\d+(?:\.\d+)?)\s*(?:元)?\s*$/);
+    if (!m) return;
+    var price = parseFloat(m[1]);
+    if (!(price > 0)) return;
+    var name = s.slice(0, m.index).replace(/[,，、：:\s]+$/, '').trim();
+    out.push({ name: name || ('凑单物' + (out.length + 1)), price: toCents(price) });
+  };
+  String(text || '').split(/\r?\n/).forEach(function(line){
+    var s = line.trim();
+    if (!s) return;
+    // 逗号/顿号分隔：只有当每一段都能独立解析成商品时才拆，
+    // 这样「纸巾， 9.9」仍然是一个带名字的商品，不会被拆坏
+    var parts = s.split(/[,，、;；]+/).map(function(t){ return t.trim(); }).filter(Boolean);
+    var allItems = parts.length > 1 && parts.every(function(p){ return /(\d+(?:\.\d+)?)\s*(?:元)?$/.test(p); });
+    if (allItems){ parts.forEach(push); return; }
+    // 纯数字用空格隔开（5 9.9 12）也拆
+    if (/^[\d.\s元]+$/.test(s)){ s.split(/\s+/).filter(Boolean).forEach(push); return; }
+    push(s);
+  });
+  return out;
+}
+
+/* 解析「分享文案 / 优惠券文案」：从微信里整段复制过来的那种
+   例：
+     【淘宝】https://m.tb.cn/h.abc 「小米移动电源 20000mAh」点击链接直接打开
+     跨店满减：每满300减50，可叠加店铺券满199减20
+   抽出：商品名、价格（文案里带 ¥ 才认得出）、满减规则、链接 */
+function parseShareText(text){
+  var src = String(text || '');
+  var out = { items: [], rules: [], links: [], hasLink: false };
+
+  // 1) 先把满减文案摘出来，免得里面的数字被当成价格
+  var ruleRe = /(每满|满)\s*(\d+(?:\.\d+)?)\s*(?:元)?\s*(?:减|立减|-|—|－)\s*(\d+(?:\.\d+)?)\s*(?:元)?/g;
+  var flatRe = /(?:无门槛|不限门槛)\s*(?:优惠券|券|红包)?\s*(?:减|立减)\s*(\d+(?:\.\d+)?)\s*(?:元)?/g;
+  var seen = {}, m;
+  while ((m = ruleRe.exec(src)) !== null){
+    var t = m[1] + m[2] + '减' + m[3];
+    if (!seen[t]){ seen[t] = 1; out.rules.push({ scope: 'all', text: t }); }
+  }
+  while ((m = flatRe.exec(src)) !== null){
+    var t2 = '无门槛减' + m[1];
+    if (!seen[t2]){ seen[t2] = 1; out.rules.push({ scope: 'all', text: t2 }); }
+  }
+  var work = src.replace(ruleRe, ' ').replace(flatRe, ' ');
+
+  // 2) 商品名：引号里的标题（跳过【淘宝】这种来源标签）
+  var TAGS = { '淘宝':'1','天猫':'1','京东':'1','拼多多':'1','抖音':'1','唯品会':'1','闲鱼':'1',
+               '阿里巴巴':'1','天猫超市':'1','京东自营':'1','淘宝网':'1','手机淘宝':'1' };
+  var nameRe = /[「『【\[]([^」』】\]\n]{2,90})[」』】\]]/g;
+  while ((m = nameRe.exec(work)) !== null){
+    var name = m[1].replace(/\s+/g, ' ').trim();
+    if (TAGS[name] || name.length < 2 || /^https?:/.test(name)) continue;
+    var dup = false;
+    for (var i = 0; i < out.items.length; i++) if (out.items[i].name === name) dup = true;
+    if (!dup) out.items.push({ name: name, price: '' });
+  }
+
+  // 3) 价格：只认带 ¥ / ￥ 的数字，按出现顺序贴到商品上
+  var prices = [];
+  var priceRe = /[¥￥]\s*(\d+(?:\.\d+)?)/g;
+  while ((m = priceRe.exec(work)) !== null) prices.push(parseFloat(m[1]));
+  for (var j = 0; j < out.items.length && j < prices.length; j++) out.items[j].price = prices[j];
+
+  // 4) 链接
+  var linkRe = /https?:\/\/[^\s，,。；;、）)】\]"'<>]+/g;
+  while ((m = linkRe.exec(src)) !== null) out.links.push(m[0]);
+  out.hasLink = out.links.length > 0;
+  return out;
+}
+
+// 优惠规则文本 → 规则对象
+// scope: all=按订单总额算门槛 | wanted=按想要的商品金额 | filler=按凑单金额
+function parseRuleText(text, scope){
+  var t = String(text || '').replace(/\s+/g, '');
+  if (!t) return null;
+  var m;
+  m = t.match(/^每满(\d+(?:\.\d+)?)(?:元)?(?:减|-|—|－)(\d+(?:\.\d+)?)(?:元)?$/);
+  if (m) return { scope: scope || 'all', type: 'per', threshold: toCents(m[1]), discount: toCents(m[2]), text: text };
+  m = t.match(/^(?:无门槛)?减(\d+(?:\.\d+)?)(?:元)?$/);
+  if (m) return { scope: scope || 'all', type: 'flat', threshold: 0, discount: toCents(m[1]), text: text };
+  var parts = t.split(/[,，;；]/).filter(Boolean);
+  var tiers = [];
+  for (var i = 0; i < parts.length; i++){
+    var mm = parts[i].match(/^满(\d+(?:\.\d+)?)(?:元)?(?:减|-|—|－)(\d+(?:\.\d+)?)(?:元)?$/);
+    if (!mm) return null;
+    tiers.push({ threshold: toCents(mm[1]), discount: toCents(mm[2]) });
+  }
+  if (!tiers.length) return null;
+  tiers.sort(function(a, b){ return a.threshold - b.threshold; });
+  return { scope: scope || 'all', type: 'tier', tiers: tiers, text: text };
+}
+
+// 单条规则在给定金额上能减多少
+function ruleDiscount(rule, base){
+  if (base <= 0) return 0;
+  var d = 0;
+  if (rule.type === 'per'){
+    d = Math.floor(base / rule.threshold) * rule.discount;
+  } else if (rule.type === 'flat'){
+    d = rule.discount;
+  } else {
+    for (var i = 0; i < rule.tiers.length; i++){
+      if (base >= rule.tiers[i].threshold) d = rule.tiers[i].discount;
+    }
+  }
+  return Math.max(0, Math.min(d, base));
+}
+
+/* -------------------------------------------------------------------------
+   整单金额模型：算一次「想要的原价 W + 凑单原价 F」这一单的全部数字
+   顺序严格按平台口径：
+     1) 88VIP 等单品折扣 → 折后金额 W88 / F88
+     2) 满减（跨店满减按整单比例分摊；店铺券只作用在某一边）
+     3) 红包（满减后按商品金额比例分摊）
+     4) 运费（不进满减门槛）
+   退款方案：退款额 = 凑单物原价 − 分摊给它的所有优惠。
+   于是「想要的东西最终成本」= W − 分摊到想要这边的优惠（vip + 满减 + 红包）。
+   ------------------------------------------------------------------------- */
+function evalOrder(rules, W_raw, F_raw, opt){
+  var vip = (opt && opt.vip) || { on:false, off:0, scope:'all' };
+  var rmb = (opt && opt.rmb) || { amount:0, scope:'all' };
+  var shipNet = Math.max(0, ((opt && opt.shipFee) || 0) - ((opt && opt.shipCoupon) || 0));
+
+  // 1) 88VIP
+  var vipW = 0, vipF = 0;
+  if (vip.on && vip.off > 0){
+    if (vip.scope !== 'filler') vipW = Math.round(W_raw * vip.off);
+    if (vip.scope !== 'wanted') vipF = Math.round(F_raw * vip.off);
+  }
+  var W88 = Math.max(0, W_raw - vipW), F88 = Math.max(0, F_raw - vipF), T88 = W88 + F88;
+
+  // 2) 满减
+  var prop = 0, own = 0, fil = 0;
+  for (var i = 0; i < rules.length; i++){
+    var r = rules[i];
+    if (r.scope === 'wanted') own += ruleDiscount(r, W88);
+    else if (r.scope === 'filler') fil += ruleDiscount(r, F88);
+    else prop += ruleDiscount(r, T88);
+  }
+  own = Math.min(own, W88);
+  fil = Math.min(fil, F88);
+  prop = Math.min(prop, Math.max(0, T88 - own - fil));
+  var D = prop + own + fil;
+  var afterRules = Math.max(0, T88 - D);
+
+  // 满减按折后金额比例分摊到两边
+  var propW = T88 > 0 ? Math.round(prop * W88 / T88) : 0;
+  var propF = prop - propW;
+
+  // 3) 红包：只能分在「还没被减掉的实付」上。
+  //    必须用剩余应付（residW/residF）做分母，不能用订单总额 ——
+  //    否则大额红包会分到已被满减减掉的钱上，算出单件实付为负（退款反而倒赚）。
+  var residW = Math.max(0, W88 - propW - own);
+  var residF = Math.max(0, F88 - propF - fil);
+  var R = Math.max(0, rmb.amount || 0), rmbW = 0, rmbF = 0;
+  if (R > 0){
+    if (rmb.scope === 'wanted'){
+      R = Math.min(R, residW);
+      rmbW = R;
+    } else {
+      R = Math.min(R, residW + residF);
+      if (residW + residF > 0){
+        rmbW = Math.round(R * residW / (residW + residF));
+        rmbF = R - rmbW;
+      }
+    }
+  }
+  var Rtotal = rmbW + rmbF;
+
+  // 分摊
+  var allocW = vipW + propW + own + rmbW;   // 落在「想要的」上的全部优惠
+  var allocF = vipF + propF + fil + rmbF;   // 落在「凑单物」上的全部优惠
+
+  var payB = afterRules - Rtotal;          // 商品实付（不含运费）
+  var payBTotal = payB + shipNet;          // 留下方案：总实付
+  var netA = W_raw - allocW;               // 退款方案：想要的东西净成本（不含运费）
+  var refund = F_raw - allocF;             // 退款到账（现金/原路）
+  return {
+    vipW: vipW, vipF: vipF, vipTotal: vipW + vipF,
+    prop: prop, propW: propW, propF: propF, own: own, fil: fil, D: D,
+    allocW: allocW, allocF: allocF,
+    total: vipW + vipF + D + Rtotal,       // 全部优惠合计（88VIP + 满减 + 红包）
+    R: Rtotal, rmbW: rmbW, rmbF: rmbF, afterRules: afterRules,
+    W88: W88, F88: F88, T88: T88, shipNet: shipNet,
+    payB: payB, payBTotal: payBTotal, payUpfront: payBTotal,
+    netA: netA, refund: refund,
+    rate: (W_raw + F_raw) > 0 ? payBTotal / (W_raw + F_raw) : 1
+  };
+}
+
+/* 凑单池 0/1 背包：dp[s] = 凑到 s 分最少需要几件
+   复盘组合改用「按层记录选择位」的 bitset。
+   不能用 prevS/prevI 链：就地更新时 dp[s] 会被同一轮里更小的 s' 刷小，
+   已经写好的前驱指针随之失效，会复盘出「同一件商品用两次」的假组合。 */
+function subsetSums(prices, capF, maxItems){
+  var n = prices.length;
+  var dp = new Int32Array(capF + 1).fill(INF);
+  var stride = (capF >> 3) + 1;
+  var take = new Uint8Array(n * stride);   // take[i][s]：第 i 轮靠商品 i 首次凑到 s
+  dp[0] = 0;
+  for (var i = 0; i < n; i++){
+    var p = prices[i];
+    if (p > capF) continue;
+    var off = i * stride;
+    for (var s = capF - p; s >= 0; s--){
+      if (dp[s] >= INF) continue;
+      if (dp[s] + 1 > maxItems) continue;
+      if (dp[s] + 1 < dp[s + p]){
+        dp[s + p] = dp[s] + 1;
+        take[off + ((s + p) >> 3)] |= 1 << ((s + p) & 7);
+      }
+    }
+  }
+  return { dp: dp, take: take, stride: stride, n: n };
+}
+function reconstruct(f, sk, prices){
+  var idx = [], s = f;
+  for (var i = sk.n - 1; i >= 0 && s > 0; i--){
+    if (sk.take[i * sk.stride + (s >> 3)] & (1 << (s & 7))){
+      idx.push(i);
+      s -= prices[i];
+    }
+  }
+  return idx.reverse();
+}
+
+/* ---- 主求解 ---- */
+function solve(input){
+  input = input || {};
+  var wanted = (input.wanted || []).map(function(w){
+    return {
+      name: String(w.name || '').trim() || '想要的商品',
+      price: toCents(w.price),
+      qty: Math.max(1, parseInt(w.qty, 10) || 1)
+    };
+  }).filter(function(w){ return w.price > 0; });
+  var W = wanted.reduce(function(a, w){ return a + w.price * w.qty; }, 0);
+
+  var rules = [], badRules = [];
+  (input.ruleRows || []).forEach(function(r){
+    var p = parseRuleText(r.text, r.scope);
+    if (p) rules.push(p);
+    else if (String(r.text || '').trim()) badRules.push(String(r.text).trim());
+  });
+
+  var vipIn = input.vip || {};
+  var rmbIn = input.rmb || {};
+  var opt = {
+    vip: {
+      on: !!vipIn.on,
+      off: Math.max(0, Math.min(0.5, Number(vipIn.off) || 0)),
+      scope: vipIn.scope || 'all'
+    },
+    rmb: { amount: toCents(rmbIn.amount), scope: rmbIn.scope || 'all' },
+    shipFee: toCents(input.shipFee),
+    shipCoupon: toCents(input.shipCoupon),
+    returnShip: toCents(input.returnShip)
+  };
+  opt.shipNet = Math.max(0, opt.shipFee - opt.shipCoupon);
+
+  var pool = parsePool(input.poolText).slice(0, 300);
+  var maxItems = Math.max(1, Math.min(20, parseInt(input.maxItems, 10) || 6));
+
+  var res = { ok: true, messages: [], W: W, wanted: wanted, rules: rules, badRules: badRules,
+              pool: pool, maxItems: maxItems, warnings: [], opt: opt };
+
+  if (W <= 0){ res.ok = false; res.messages.push('请先填写至少一个想要的商品和它的价格。'); return res; }
+  var hasBenefit = rules.length > 0 || (opt.vip.on && opt.vip.off > 0) || opt.rmb.amount > 0 ||
+                   opt.shipFee > 0 || opt.shipCoupon > 0;
+  if (!hasBenefit){
+    res.ok = false;
+    res.messages.push('请至少填写一条能看懂的优惠规则（例如「每满300减40」），或填上 88VIP / 红包。');
+    return res;
+  }
+
+  // 档位门槛 → 搜索上界
+  var thresholds = [];
+  rules.forEach(function(r){
+    if (r.type === 'per') thresholds.push(r.threshold);
+    else if (r.type === 'tier') r.tiers.forEach(function(t){ thresholds.push(t.threshold); });
+  });
+  var maxTh = thresholds.length ? Math.max.apply(null, thresholds) : 0;
+  var capT = Math.max(2 * maxTh, W + 10000);            // 至少再往下探 100 元
+
+  // 目标金额反查（可选）
+  var tgt = input.target || {};
+  var targetF = null, targetMode = tgt.mode === 'order' ? 'order' : 'filler';
+  if (tgt.on && toCents(tgt.amount) > 0){
+    targetF = targetMode === 'order' ? toCents(tgt.amount) - W : toCents(tgt.amount);
+  }
+  if (targetF !== null && targetF > 0) capT = Math.max(capT, W + targetF + 5000);
+
+  var poolSum = pool.reduce(function(a, p){ return a + p.price; }, 0);
+  var capF = Math.min(Math.max(0, capT - W), poolSum, 300000);  // 最多 3000 元
+  if (poolSum > capF) res.warnings.push('凑单池金额超出搜索范围，只取前段金额参与计算（通常不影响结果）。');
+
+  var prices = pool.map(function(p){ return p.price; });
+  var dpk = subsetSums(prices, capF, maxItems);
+  var dp = dpk.dp;
+
+  // 基准：完全不凑单
+  var base = evalOrder(rules, W, 0, opt);
+  var baseline = { e: base, netA: base.netA + base.shipNet, payB: base.payBTotal };
+  res.baseline = { netA: baseline.netA, pay: baseline.netA, payB: baseline.payB,
+                   disc: base.vipTotal + base.D + base.R, e: base };
+
+  function makeCand(f){
+    var e = evalOrder(rules, W, f, opt);
+    var netA = e.netA + e.shipNet + (f > 0 ? opt.returnShip : 0);   // 方案A真实成本
+    return {
+      f: f, T: W + f, e: e, d: e,
+      items: reconstruct(f, dpk, prices).map(function(i){ return pool[i]; }),
+      payUpfront: e.payUpfront,
+      refund: e.refund,
+      vipTotal: e.vipTotal, rmbBack: e.rmbF,
+      netA: netA,
+      savingA: baseline.netA - netA,
+      payB: e.payBTotal,
+      gain: baseline.payB - e.payBTotal,
+      rate: e.rate
+    };
+  }
+
+  // 扫描所有可凑出的凑单总额
+  var cands = [];
+  for (var f = 0; f <= capF; f++){
+    if (dp[f] >= INF) continue;
+    cands.push(makeCand(f));
+  }
+  res.cands = cands;
+
+  var maxReach = 0;
+  for (var q = capF; q >= 0; q--){ if (dp[q] < INF){ maxReach = q; break; } }
+  res.maxReach = maxReach;
+
+  if (cands.length){
+    // 退款方案只认「真能省钱」的候选（savingA > 0）
+    res.profitable = cands.filter(function(c){ return c.f > 0 && c.savingA > 0; })
+      .sort(function(a, b){ return b.savingA - a.savingA || a.payUpfront - b.payUpfront || a.f - b.f; });
+    res.topA = res.profitable.slice(0, 6);
+    res.bestA = res.profitable.length ? res.profitable[0] : null;
+
+    var byGain = cands.slice().sort(function(a, b){
+      return b.gain - a.gain || a.rate - b.rate || a.f - b.f;
+    });
+    res.topB = byGain.slice(0, 6);
+    res.bestB = byGain.length ? byGain[0] : null;
+    res.bestRate = cands.slice().sort(function(a, b){
+      return a.rate - b.rate || a.payB - b.payB || a.f - b.f;
+    })[0];
+  }
+
+  // 档位分析：够到每一档需要凑多少、值不值、边际收益如何
+  var anaTh = [];
+  thresholds.forEach(function(t){ if (anaTh.indexOf(t) < 0) anaTh.push(t); });
+  rules.forEach(function(r){
+    if (r.type !== 'per') return;
+    for (var k = 2; k <= 4; k++){
+      var t = r.threshold * k;
+      if (W + capF >= t && anaTh.indexOf(t) < 0) anaTh.push(t);
+    }
+  });
+  anaTh.sort(function(a, b){ return a - b; });
+  res.tiers = anaTh.map(function(t){
+    var row = { threshold: t, gap: t - W, reached: W >= t };
+    if (row.reached){ row.disc = baseline.disc; return row; }
+    for (var f = row.gap; f <= capF; f++){
+      if (dp[f] < INF){
+        var c = makeCand(f);
+        row.f = f;
+        row.over = f - row.gap;
+        row.items = c.items;
+        row.disc = c.d.total;
+        row.netA = c.netA;
+        row.savingA = c.savingA;
+        row.marginal = null;
+        return row;
+      }
+    }
+    row.none = true;
+    return row;
+  });
+  // 边际收益：相对上一档（或相对不凑单）每多花 1 元能多省多少
+  var lastF = 0, lastS = 0;
+  res.tiers.forEach(function(row){
+    if (row.reached) return;
+    if (row.none){ row.marginal = null; return; }
+    if (row.f > lastF) row.marginal = (row.savingA - lastS) / (row.f - lastF);
+    lastF = row.f; lastS = row.savingA;
+  });
+
+  // 最近的未达标档位 + 下一档（用于文字建议）
+  res.nearestTier = null;
+  res.nextTier = null;
+  for (var i = 0; i < res.tiers.length; i++){
+    if (!res.tiers[i].reached && !res.nearestTier) res.nearestTier = res.tiers[i];
+  }
+  if (res.bestA){
+    for (var j = 0; j < res.tiers.length; j++){
+      var tr = res.tiers[j];
+      if (tr.threshold > res.bestA.T && !tr.none){ res.nextTier = tr; break; }
+    }
+  }
+
+  // 目标金额反查：给出「刚够/略超」和「差一点」各最多 3 个组合
+  if (targetF !== null){
+    var over = [], under = [];
+    if (targetF <= 0){
+      res.lookup = { mode: targetMode, targetF: targetF, over: [], under: [], note: '目标金额不高于你想要的商品金额，不用凑单就能满足。' };
+    } else {
+      for (var a1 = 0; a1 <= capF && over.length < 3; a1++){
+        if (dp[a1] < INF && a1 >= targetF) over.push(makeCand(a1));
+      }
+      for (var a2 = capF; a2 >= 0 && under.length < 3; a2--){
+        if (dp[a2] < INF && a2 < targetF) under.push(makeCand(a2));
+      }
+      var note = '';
+      if (!over.length) note = '凑单池总共只能凑到 ' + money(maxReach) + '，达不到目标金额。';
+      res.lookup = { mode: targetMode, targetF: targetF, over: over, under: under, note: note };
+    }
+  }
+
+  res.advice = buildAdvice(res);
+  return res;
+}
+
+/* ---- 文字建议：直接说结论，并解释为什么 ---- */
+function buildAdvice(res){
+  var out = [];
+  var A = res.bestA, B = res.bestB;
+
+  if (A){
+    // 推荐档位自己的「边际效率」：这一次凑单，每多花 1 元省回多少
+    var bestTier = null;
+    (res.tiers || []).forEach(function(row){
+      if (!row.reached && row.f === A.f && row.marginal !== null && row.marginal !== undefined) bestTier = row;
+    });
+    out.push({ k: 'good', t: '✅ 最省：凑 ' + money(A.f) + '，想要的东西最终只花 <b>' + money(A.netA) +
+      '</b>，比不凑单省 <b>' + money(A.savingA) + '</b>' +
+      (bestTier ? '（这一档平均每多花 ¥1 省 ¥' + bestTier.marginal.toFixed(2) + '）' : '') +
+      '。需先垫付 ' + money(A.payUpfront) +
+      '，退款到账 ' + money(A.refund) +
+      (A.rmbBack > 0 ? '，另有 ' + money(A.rmbBack) + ' 退回红包余额（不是现金）' : '') + '。' });
+  } else {
+    var t1 = '❌ 退款方案：现在的凑单池凑不出能省钱的组合，<b>直接买最省</b>，实付 ' + money(res.baseline.netA) + '。';
+    if (res.nearestTier){
+      t1 += res.nearestTier.none
+        ? '最近的档位是 ' + money(res.nearestTier.threshold) + '，还差 ' + money(res.nearestTier.gap) +
+          '，但池子里最多只能凑到 ' + money(res.maxReach) + '，得再加几件贵的进来。'
+        : '最近的档位是 ' + money(res.nearestTier.threshold) + '，还差 ' + money(res.nearestTier.gap) +
+          '，能凑到但多花的钱把优惠吃掉了。';
+    }
+    out.push({ k: 'bad', t: t1 });
+  }
+
+  if (A && res.nextTier){
+    var nt = res.nextTier, dF = nt.f - A.f, dS = nt.savingA - A.savingA;
+    if (dS < 0){
+      out.push({ k: 'bad', t: '⚠️ 再凑 ' + money(dF) + ' 够到 ' + money(nt.threshold) + ' 档，净省反而少 ' +
+        money(-dS) + '（多花的钱比多减的还多），<b>不要往上凑</b>。' });
+    } else if (dS === 0){
+      out.push({ k: 'bad', t: '⚠️ 再凑 ' + money(dF) + ' 够到 ' + money(nt.threshold) +
+        ' 档，省下的钱一分没变（多花的就是白花），<b>够到这一档就停手</b>。' });
+    } else {
+      var m = dF > 0 ? dS / dF : null;
+      out.push({ k: m !== null && m < 0.3 ? 'bad' : '', t: '再凑 ' + money(dF) + ' 够到 ' + money(nt.threshold) +
+        ' 档，能多省 ' + money(dS) + (m !== null ? '（平均每多花 ¥1 多省 ¥' + m.toFixed(2) + '）' : '') +
+        (m !== null && m < 0.3 ? '，边际太低，一般不值得' : '，可以考虑') + '。' });
+    }
+  }
+
+  if (B && candsHasFiller(res)){
+    if (B.gain > 0){
+      out.push({ k: 'good', t: '🛍 凑单物想留下自己用：加 ' + money(B.f) + '，实付 ' + money(B.payB) +
+        ' 拿到 ' + money(B.T) + ' 的东西（折扣率 ' + pct(1 - B.rate) + '），比不凑单还少花 ' + money(B.gain) + '。' });
+    } else {
+      out.push({ k: '', t: '🛍 凑单物留下自己用的话，最省的方案也要多花 ' + money(-B.gain) +
+        '（实付 ' + money(B.payB) + ' 拿 ' + money(B.T) + ' 的东西），除非这些东西你本来就要买。' });
+    }
+  }
+  return out;
+}
+function candsHasFiller(res){
+  return !!(res.cands && res.cands.length > 1);
+}
+
+/* ---- 结果复制成文字（发给别人 / 记账） ---- */
+function buildPlanText(res){
+  if (!res || !res.ok) return '';
+  var items = function(list){ return list.map(function(i){ return i.name + ' ' + money(i.price); }).join(' + '); };
+  var L = [];
+  L.push('【凑单方案】淘宝/天猫 跨店满减');
+  L.push('想要的商品：' + res.wanted.map(function(w){
+    return w.name + ' ' + money(w.price) + (w.qty > 1 ? '×' + w.qty : '');
+  }).join('、') + '　合计 ' + money(res.W));
+  L.push('不凑单实付：' + money(res.baseline.netA));
+  L.push('优惠规则：' + (res.rules.length ? res.rules.map(function(r){ return r.text; }).join('；') : '无'));
+  var extras = [];
+  if (res.opt.vip.on && res.opt.vip.off > 0){
+    extras.push('88VIP ' + Math.round((1 - res.opt.vip.off) * 100) + '折（' +
+      (res.opt.vip.scope === 'wanted' ? '仅想要的' : res.opt.vip.scope === 'filler' ? '仅凑单' : '全部') + '）');
+  }
+  if (res.opt.rmb.amount > 0) extras.push('红包 ' + money(res.opt.rmb.amount));
+  if (res.opt.shipFee || res.opt.shipCoupon) extras.push('运费 ' + money(res.opt.shipFee) + ' − 券 ' + money(res.opt.shipCoupon));
+  if (res.opt.returnShip) extras.push('凑单物退货运费 ' + money(res.opt.returnShip));
+  if (extras.length) L.push('其他：' + extras.join('；'));
+  if (res.advice && res.advice.length){
+    L.push('');
+    L.push('结论：');
+    res.advice.forEach(function(a){
+      L.push('  ' + a.t.replace(/<[^>]+>/g, '').replace(/[✅❌⚠️🛍]/g, '').trim());
+    });
+  }
+  L.push('');
+  if (res.bestA){
+    var A = res.bestA;
+    L.push('方案A｜凑单后退款（只留想要的）');
+    L.push('  凑单：' + items(A.items) + ' = ' + money(A.f));
+    L.push('  订单总额 ' + money(A.T) + '，优惠 ' + money(A.d.vipTotal + A.d.D) +
+           '，需垫付 ' + money(A.payUpfront) + '，退款到账 ' + money(A.refund) +
+           (A.rmbBack > 0 ? '，退回红包 ' + money(A.rmbBack) : ''));
+    L.push('  最终实付 ' + money(A.netA) + '，比不凑单省 ' + money(A.savingA));
+  } else {
+    L.push('方案A｜凑单后退款：现在的凑单池省不到钱，不建议走这条');
+  }
+  L.push('');
+  if (res.bestB && candsHasFiller(res)){
+    var B = res.bestB, diff = B.payB - res.baseline.payB;
+    L.push('方案B｜凑单物留下自用');
+    L.push('  凑单：' + items(B.items) + ' = ' + money(B.f));
+    L.push('  实付 ' + money(B.payB) + ' 拿到 ' + money(B.T) + ' 的东西，折扣率 ' + pct(1 - B.rate));
+    L.push('  比不凑单' + (diff > 0 ? '多花 ' + money(diff) : '少花 ' + money(-diff)));
+  }
+  if (res.lookup){
+    L.push('');
+    L.push('反查（目标' + (res.lookup.mode === 'order' ? '订单总额' : '凑单金额') + ' ' +
+      money(res.lookup.mode === 'order' ? res.lookup.targetF + res.W : res.lookup.targetF) + '）：');
+    if (res.lookup.note) L.push('  ' + res.lookup.note);
+    res.lookup.over.forEach(function(c){
+      L.push('  略超：' + items(c.items) + ' = ' + money(c.f) + '，净省 ' + money(c.savingA));
+    });
+    res.lookup.under.forEach(function(c){
+      L.push('  差一点：' + (c.f > 0 ? items(c.items) + ' = ' + money(c.f) : '不凑单') + '，净省 ' + money(c.savingA));
+    });
+  }
+  L.push('');
+  L.push('（满减/红包按商品金额比例分摊计算，实际以结算页为准）');
+  return L.join('\n');
+}
+
+/* 复制到剪贴板：优先用标准 API，本地文件/老环境回退 execCommand */
+function copyText(text, btn, label){
+  var flash = function(ok){
+    if (!btn) return;
+    btn.textContent = ok ? '✓ 已复制' : '✗ 复制失败，请长按选中文字';
+    setTimeout(function(){ btn.textContent = label || '复制'; }, 1800);
+  };
+  var legacy = function(){
+    try{
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      var ok = document.execCommand && document.execCommand('copy');
+      document.body.removeChild(ta);
+      return !!ok;
+    }catch(e){ return false; }
+  };
+  try{
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(
+        function(){ flash(true); },
+        function(){ flash(legacy()); }
+      );
+      return;
+    }
+  }catch(e){}
+  flash(legacy());
+}
+
+/* ---- 活动规则模板（档位每年每场都不同，模板只是省打字的起点） ---- */
+var TEMPLATES = [
+  { name: '双11 · 每满300减50', rules: [{ scope: 'all', text: '每满300减50' }] },
+  { name: '618 · 每满300减50', rules: [{ scope: 'all', text: '每满300减50' }] },
+  { name: '大促阶梯 · 满300减50 / 满600减100', rules: [{ scope: 'all', text: '满300减50,满600减100' }] },
+  { name: '日常 · 每满300减40', rules: [{ scope: 'all', text: '每满300减40' }] },
+  { name: '日常 · 每满200减20', rules: [{ scope: 'all', text: '每满200减20' }] },
+  { name: '双12 · 满200减30', rules: [{ scope: 'all', text: '满200减30' }] },
+  { name: '只有店铺券（无跨店）', rules: [{ scope: 'wanted', text: '满199减20' }] },
+  { name: '无门槛红包', rules: [{ scope: 'all', text: '无门槛减10' }] }
+];
+
+/* =========================================================================
+   界面
+   ========================================================================= */
+function initUI(){
+  var $ = function(id){ return document.getElementById(id); };
+  var wantedList = $('wantedList'), ruleList = $('ruleList');
+
+  function addWantedRow(name, price, qty){
+    var div = document.createElement('div');
+    div.className = 'row wanted-row';
+    div.innerHTML =
+      '<input class="wname" placeholder="商品名（可留空）" value="' + esc(name || '') + '">' +
+      '<input class="wprice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="价格" value="' + (price || '') + '">' +
+      '<input class="wqty" type="number" inputmode="numeric" min="1" step="1" value="' + (qty || 1) + '">' +
+      '<button class="del" title="删除" aria-label="删除">×</button>';
+    div.querySelector('.del').onclick = function(){ div.remove(); refreshTotal(); save(); };
+    div.addEventListener('input', function(){ refreshTotal(); save(); });
+    wantedList.appendChild(div);
+  }
+
+  function addRuleRow(scope, text){
+    var div = document.createElement('div');
+    div.className = 'row rule-row';
+    div.innerHTML =
+      '<select class="rscope">' +
+        '<option value="all">全部商品</option>' +
+        '<option value="wanted">仅想要</option>' +
+        '<option value="filler">仅凑单</option>' +
+      '</select>' +
+      '<input class="rtext" placeholder="每满300减40" value="' + esc(text || '') + '">' +
+      '<button class="del" title="删除" aria-label="删除">×</button>';
+    div.querySelector('.rscope').value = scope || 'all';
+    div.querySelector('.del').onclick = function(){ div.remove(); save(); };
+    div.addEventListener('input', save);
+    div.addEventListener('change', save);
+    ruleList.appendChild(div);
+  }
+
+  function setRules(list){
+    ruleList.innerHTML = '';
+    (list || []).forEach(function(r){ addRuleRow(r.scope, r.text); });
+    if (!list || !list.length) addRuleRow('all', '');
+    save();
+  }
+
+  function refreshTotal(){
+    var t = 0;
+    wantedList.querySelectorAll('.wanted-row').forEach(function(r){
+      var p = parseFloat(r.querySelector('.wprice').value) || 0;
+      var q = Math.max(1, parseInt(r.querySelector('.wqty').value, 10) || 1);
+      t += p * q;
+    });
+    $('wantedTotal').textContent = money(toCents(t));
+  }
+
+  function readInput(){
+    var wanted = [];
+    wantedList.querySelectorAll('.wanted-row').forEach(function(r){
+      wanted.push({
+        name: r.querySelector('.wname').value,
+        price: r.querySelector('.wprice').value,
+        qty: r.querySelector('.wqty').value
+      });
+    });
+    var ruleRows = [];
+    ruleList.querySelectorAll('.rule-row').forEach(function(r){
+      ruleRows.push({ scope: r.querySelector('.rscope').value, text: r.querySelector('.rtext').value });
+    });
+    var off = parseFloat($('vipOff').value) || 95;
+    return {
+      wanted: wanted, ruleRows: ruleRows,
+      poolText: $('pool').value, maxItems: $('maxItems').value,
+      vip: { on: $('vipOn').checked, off: (100 - Math.max(50, Math.min(100, off))) / 100, scope: $('vipScope').value },
+      rmb: { amount: $('rmbAmt').value, scope: $('rmbScope').value },
+      shipFee: $('shipFee').value, shipCoupon: $('shipCoupon').value, returnShip: $('returnShip').value,
+      target: { on: !!$('targetAmt').value, amount: $('targetAmt').value, mode: $('targetMode').value }
+    };
+  }
+
+  /* ---- 结果渲染 ---- */
+  function comboHtml(items, extraLabel, extraVal){
+    var h = '<ul class="combo">';
+    if (!items.length) h += '<li><span class="name">不加凑单物</span><span class="val">¥0.00</span></li>';
+    items.forEach(function(it){
+      h += '<li><span class="name">' + esc(it.name) + '</span><span class="val">' + money(it.price) + '</span></li>';
+    });
+    if (extraLabel) h += '<li><span class="name"><b>' + extraLabel + '</b></span><span class="val">' + extraVal + '</span></li>';
+    return h + '</ul>';
+  }
+  function statsHtml(pairs){
+    return '<div class="stats">' + pairs.map(function(p){
+      return '<div class="stat"><span>' + p[0] + '</span><b>' + p[1] + '</b>' + (p[2] ? '<em>' + p[2] + '</em>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+  function ruleLinesHtml(rules, W, F, opt){
+    var W88 = W, F88 = F;
+    if (opt.vip.on && opt.vip.off > 0){
+      if (opt.vip.scope !== 'filler') W88 = Math.round(W * (1 - opt.vip.off));
+      if (opt.vip.scope !== 'wanted') F88 = Math.round(F * (1 - opt.vip.off));
+    }
+    var T88 = W88 + F88;
+    var h = '';
+    if (opt.vip.on && opt.vip.off > 0){
+      h += '<div>88VIP ' + Math.round((1 - opt.vip.off) * 100) + '折　<span style="opacity:.75">折后 ' +
+        money(W88) + ' + ' + money(F88) + ' → <b>−' + money((W - W88) + (F - F88)) + '</b></span></div>';
+    }
+    rules.forEach(function(r){
+      var scopeTxt = r.scope === 'wanted' ? '按想要商品金额' : (r.scope === 'filler' ? '按凑单金额' : '按订单总额（折后）');
+      var b = r.scope === 'wanted' ? W88 : (r.scope === 'filler' ? F88 : T88);
+      h += '<div>' + esc(r.text) + '　<span style="opacity:.75">' + scopeTxt + ' ' + money(b) +
+           ' → <b>−' + money(ruleDiscount(r, b)) + '</b></span></div>';
+    });
+    if (opt.rmb.amount > 0){
+      // 红包实际能减多少由「剩余应付」决定，这里跟求解器用同一套算法，避免显示与实际不一致
+      var eo = evalOrder(rules, W, F, opt);
+      h += '<div>红包　<span style="opacity:.75">' +
+        (opt.rmb.scope === 'wanted' ? '仅想要的' : '按剩余实付比例分摊') +
+        ' → <b>−' + money(eo.R) + '</b></span></div>';
+    }
+    if (opt.shipFee || opt.shipCoupon){
+      h += '<div>运费　<span style="opacity:.75">运费 ' + money(opt.shipFee) + ' − 券 ' + money(opt.shipCoupon) +
+        ' = <b>' + money(Math.max(0, opt.shipFee - opt.shipCoupon)) + '</b>（不进满减门槛）</span></div>';
+    }
+    if (opt.returnShip){
+      h += '<div>凑单物退货运费（只在方案A计）　<b>+' + money(opt.returnShip) + '</b></div>';
+    }
+    return h;
+  }
+
+  function render(res){
+    var el = $('result');
+    if (!res.ok){
+      el.innerHTML = '<section class="card"><h2><span class="n">!</span>还差一点信息</h2>' +
+        res.messages.map(function(m){ return '<p class="warn">' + esc(m) + '</p>'; }).join('') + '</section>';
+      return;
+    }
+    var h = '';
+
+    // 结论放最前面
+    if (res.advice && res.advice.length){
+      h += '<section class="card"><h2><span class="n">✓</span>结论</h2><div class="advice">' +
+        res.advice.map(function(a){ return '<div class="' + (a.k || '') + '">' + a.t + '</div>'; }).join('') +
+        '</div></section>';
+    }
+
+    h += '<section class="card"><h2><span class="n">i</span>这一单的底子</h2>' +
+      statsHtml([
+        ['想要的商品合计', money(res.W)],
+        ['不凑单实付', money(res.baseline.netA), res.baseline.disc ? '已优惠 ' + money(res.baseline.disc) : ''],
+        ['凑单池', res.pool.length + ' 件可选', res.pool.length ? '最多选 ' + res.maxItems + ' 件' : '还没填']
+      ]) +
+      (res.badRules.length ? '<p class="warn">这些规则没看懂，已忽略：' + res.badRules.map(esc).join('、') + '</p>' : '') +
+      (res.warnings || []).map(function(w){ return '<p class="warn">' + esc(w) + '</p>'; }).join('') +
+      '</section>';
+
+    if (!res.cands || res.cands.length <= 1){
+      h += '<section class="card"><p class="warn">凑单池里凑不出有效方案：可能池子太小、价格太高，或者已经能凑到门槛了。多贴几个低价商品试试。</p></section>';
+      if (res.lookup) h += lookupCard(res);
+      el.innerHTML = h;
+      bindResult(el, res);
+      return;
+    }
+
+    // 手机上好用的两个出口：复制成文字发人 / 打成 PDF 发人
+    h += '<section class="card"><div class="copybar">' +
+      '<button class="ghost" id="copyPlanBtn">📋 复制方案文字</button>' +
+      '<button class="ghost" id="printBtn">🖨 打印 / 存成 PDF</button>' +
+      '</div><p class="scroll-hint" style="margin:0">复制后可以直接粘到微信发给别人，或自己留着记账。</p></section>';
+
+    var A = res.bestA, B = res.bestB, R = res.bestRate;
+    var nearest = res.nearestTier;
+
+    /* 方案 A：只有真能省钱才给方案 */
+    if (A){
+      h += '<section class="card">' +
+        '<h2><span class="n">A</span>凑单后立刻退款 <span class="tag">净省 ' + money(A.savingA) + '</span></h2>' +
+        '<p class="big">最终实付 <b>' + money(A.netA) + '</b><s>' + money(res.baseline.netA) + '</s>' +
+          '<span class="save">省 ' + money(A.savingA) + '</span></p>' +
+        comboHtml(A.items, '凑单合计', money(A.f)) +
+        statsHtml([
+          ['订单总额', money(A.T)],
+          ['优惠合计', '−' + money(A.d.vipTotal + A.d.D + A.d.R)],
+          ['需先垫付', money(A.payUpfront)],
+          ['退款到账', money(A.refund) + (A.rmbBack > 0 ? '（含红包 ' + money(A.rmbBack) + '）' : '')]
+        ]) +
+        (res.opt.returnShip ? '<p class="warn">已把凑单物退货运费 ' + money(res.opt.returnShip) + ' 计入方案A成本。</p>' : '') +
+        '<details><summary>钱是怎么算的 / 优惠明细</summary>' +
+          '<div class="kv">' + ruleLinesHtml(res.rules, res.W, A.f, res.opt) + '</div>' +
+          '<div class="kv">淘宝退款时优惠按商品金额比例分摊，所以退掉凑单物，分摊给它的那部分优惠会一起退掉。<br>' +
+          '分摊给凑单物的优惠 = ' + money(A.d.vipF + A.d.propF + A.d.fil + A.d.rmbF) + '（88VIP ' + money(A.d.vipF) +
+            ' + 满减 ' + money(A.d.propF) + ' + 只减凑单的券 ' + money(A.d.fil) + ' + 红包 ' + money(A.d.rmbF) + '）<br>' +
+          '退款到账 = ' + money(A.f) + ' − 分摊优惠 = <b>' + money(A.refund) + '</b>' +
+          (A.d.rmbF > 0 ? '（其中 ' + money(A.d.rmbF) + ' 是退回红包余额，不是现金）' : '') + '<br>' +
+          '想要的东西净成本 = ' + money(res.W) + ' − 分摊到这边的优惠 ' + money(A.d.allocW || (res.W - A.d.netA)) +
+            ' = <b>' + money(A.d.netA) + '</b>' + (res.opt.shipNet ? '，再加整单运费 ' + money(res.opt.shipNet) : '') + '</div>' +
+        '</details></section>';
+    } else {
+      h += '<section class="card">' +
+        '<h2><span class="n">A</span>凑单后立刻退款 <span class="tag alt">省不到钱</span></h2>' +
+        '<p class="warn">现在的凑单池里凑不出「能省钱」的组合，这条路先别走。</p>' +
+        (nearest
+          ? '<div class="kv">最近的档位是 <b>' + money(nearest.threshold) + '</b>，还差 <b>' + money(nearest.gap) + '</b>。' +
+            (nearest.none
+              ? '池子里总共只能凑出 <b>' + money(res.maxReach) + '</b>，还不够 —— 去凑单专区再挑几件贵的加进来。'
+              : '池子里能凑到，但多花掉的钱把优惠吃掉了，算下来反而更贵。') + '</div>'
+          : '') +
+        '<div class="kv">只想按原价买想要的东西，直接下单即可：<b>' + money(res.baseline.netA) + '</b>。</div>' +
+        '</section>';
+    }
+
+    /* 方案 B */
+    h += '<section class="card">' +
+      '<h2><span class="n">B</span>凑单物留下来自己用 <span class="tag' + (B.gain > 0 ? '' : ' alt') + '">' +
+        (B.gain > 0 ? '等于白拿 ' + money(B.gain) : '相当于多花钱') + '</span></h2>' +
+      '<p class="big">实付 <b>' + money(B.payB) + '</b> 拿到 <b style="font-size:19px">' + money(B.T) + '</b> 的东西' +
+        '<span class="save">折扣率 ' + pct(1 - B.rate) + '</span></p>' +
+      comboHtml(B.items, '凑单合计', money(B.f)) +
+      (function(){
+        var diff = B.payB - res.baseline.payB;
+        return statsHtml([
+          ['订单总额', money(B.T)],
+          ['优惠合计', '−' + money(B.d.vipTotal + B.d.D + B.d.R)],
+          ['实付', money(B.payB)],
+          ['比不凑单' + (diff > 0 ? '多花' : '少花'), money(Math.abs(diff)), '多拿 ' + money(B.f) + ' 的东西']
+        ]);
+      })() +
+      '<details><summary>优惠明细</summary><div class="kv">' + ruleLinesHtml(res.rules, res.W, B.f, res.opt) + '</div></details>' +
+      '</section>';
+
+    /* 反查结果 */
+    if (res.lookup) h += lookupCard(res);
+
+    /* 候选对比 */
+    function candTable(rows, mode){
+      var t = '<table><thead><tr><th>凑单组合</th><th>凑单额</th><th>订单总额</th><th>优惠</th>' +
+        (mode === 'A' ? '<th>垫付</th><th>最终实付</th><th>净省</th>' : '<th>实付</th><th>折扣率</th><th>净省</th>') +
+        '</tr></thead><tbody>';
+      rows.forEach(function(c){
+        var names = c.items.map(function(i){ return i.name; }).join(' + ');
+        t += '<tr><td title="' + esc(names) + '">' + esc(names) + '</td>' +
+          '<td>' + money(c.f) + '</td><td>' + money(c.T) + '</td><td>−' + money(c.d.vipTotal + c.d.D + c.d.R) + '</td>' +
+          (mode === 'A'
+            ? '<td>' + money(c.payUpfront) + '</td><td>' + money(c.netA) + '</td><td>' + money(c.savingA) + '</td>'
+            : '<td>' + money(c.payB) + '</td><td>' + pct(1 - c.rate) + '</td><td>' + money(c.gain) + '</td>') +
+          '</tr>';
+      });
+      return '<div class="tbl">' + t + '</tbody></table></div><p class="scroll-hint">← 手机上可左右滑动看完整表格 →</p>';
+    }
+    h += (res.topA.length > 1
+        ? '<section class="card"><h2><span class="n">A</span>退款方案 · 其他可选</h2>' + candTable(res.topA, 'A') + '</section>'
+        : '');
+    h += '<section class="card"><h2><span class="n">B</span>留下方案 · 其他可选</h2>' + candTable(res.topB, 'B') +
+         '<p class="hint" style="margin:10px 0 0">最低折扣率出现在：凑单 ' + money(R.f) + ' 的组合，实付 ' +
+         money(R.payB) + ' 拿 ' + money(R.T) + '（' + pct(1 - R.rate) + ' off）。</p></section>';
+
+    /* 档位分析 */
+    var tierRows = res.tiers.filter(function(t){ return !t.reached; });
+    if (tierRows.length){
+      var tt = '<table><thead><tr><th>目标档位</th><th>还差</th><th>需要凑单</th><th>超出</th><th>该档优惠</th><th>退款方案净省</th><th>边际<br>（每多花¥1多省）</th></tr></thead><tbody>';
+      tierRows.forEach(function(t){
+        tt += '<tr><td>' + money(t.threshold) + '</td><td>' + money(t.gap) + '</td>';
+        if (t.none){
+          tt += '<td colspan="5" style="text-align:left;color:#b45309">凑单池里凑不出来</td>';
+        } else {
+          tt += '<td>' + money(t.f) + '</td><td>' + money(t.over) + '</td><td>−' + money(t.disc) + '</td><td>' +
+            money(t.savingA) + '</td><td>' + (t.marginal === null || t.marginal === undefined
+              ? '—' : '¥' + t.marginal.toFixed(2)) + '</td>';
+        }
+        tt += '</tr>';
+      });
+      h += '<section class="card"><h2><span class="n">#</span>每个档位值不值得够</h2>' +
+        '<div class="tbl">' + tt + '</tbody></table></div>' +
+        '<p class="hint" style="margin:10px 0 0">「净省」= 比不凑单少花多少（已扣掉退款会损失的那部分优惠）。边际 &lt; ¥0.30 基本不值得为它多凑。</p></section>';
+    }
+
+    /* 风险提示 */
+    h += '<section class="card"><h2><span class="n">!</span>下手前先看这几条</h2>' +
+      '<div class="kv">' +
+      '1. 计算顺序：88VIP 等单品折扣 → 跨店满减 → 红包 → 运费。退款时优惠与红包都按商品金额比例分摊，以结算页显示为准。<br>' +
+      '2. 红包退回来的是红包余额（可能带有效期），不是现金；平台券、店铺券的分摊方式也可能不同。<br>' +
+      '3. 频繁「凑单—退款」有账号风险：可能被判定异常交易、限制活动资格或影响信用。想稳妥就用方案 B。<br>' +
+      '4. 退款要在确认收货前发起；部分商品不支持 7 天无理由，退货还要自己出运费（这就是上面「凑单物退货运费」那一栏的用处）。<br>' +
+      '5. 凑单退款可能导致整单不再包邮，平台可能追收运费；满减通常按「活动价」加总，不含运费与税费。<br>' +
+      '6. 88VIP 折扣可能有单品上限或指定商品范围，这里假设全店通用。<br>' +
+      '7. 满减达标后别再往上堆：超出门槛的部分不产生额外优惠（除非是「每满」型，见档位表）。' +
+      '</div></section>';
+
+    el.innerHTML = h;
+    bindResult(el, res);
+  }
+
+  function bindResult(el, res){
+    var copyBtn = el.querySelector('#copyPlanBtn');
+    if (copyBtn) copyBtn.onclick = function(){ copyText(buildPlanText(res), copyBtn, '📋 复制方案文字'); };
+    var printBtn = el.querySelector('#printBtn');
+    if (printBtn) printBtn.onclick = function(){ window.print(); };
+  }
+
+  function lookupCard(res){
+    var lk = res.lookup;
+    var targetShow = lk.mode === 'order' ? money(lk.targetF + res.W) : money(lk.targetF);
+    var h = '<section class="card"><h2><span class="n">🎯</span>反查：' +
+      (lk.mode === 'order' ? '订单总额' : '凑单金额') + ' ' + targetShow + '</h2>';
+    if (lk.note) h += '<p class="warn">' + esc(lk.note) + '</p>';
+    function smallTable(rows, title){
+      if (!rows.length) return '';
+      var t = '<p class="hint" style="margin:8px 0 4px"><b>' + title + '</b></p>' +
+        '<div class="tbl"><table><thead><tr><th>组合</th><th>凑单额</th><th>订单总额</th><th>优惠</th>' +
+        '<th>方案A净省</th><th>方案B实付</th></tr></thead><tbody>';
+      rows.forEach(function(c){
+        var names = c.f === 0 ? '（不凑单）' : c.items.map(function(i){ return i.name; }).join(' + ');
+        t += '<tr><td>' + esc(names) + '</td><td>' + money(c.f) + '</td><td>' + money(c.T) + '</td><td>−' +
+          money(c.d.vipTotal + c.d.D + c.d.R) + '</td><td>' + money(c.savingA) + '</td><td>' + money(c.payB) + '</td></tr>';
+      });
+      return t + '</tbody></table></div>';
+    }
+    h += smallTable(lk.over, '刚够 / 略超目标');
+    h += smallTable(lk.under, '差一点（不够）');
+    h += '<p class="scroll-hint">手机上可左右滑动看完整表格</p></section>';
+    return h;
+  }
+
+  /* ---- 模板 ---- */
+  var TKEY = 'coudan-templates-v1';
+  function myTemplates(){
+    try{ return JSON.parse(localStorage.getItem(TKEY) || '[]'); }catch(e){ return []; }
+  }
+  function saveMyTemplates(list){
+    try{ localStorage.setItem(TKEY, JSON.stringify(list)); }catch(e){}
+  }
+  function renderTemplates(){
+    var box = $('templateChips');
+    var h = '';
+    TEMPLATES.forEach(function(t, i){
+      h += '<button class="chip" data-tpl="' + i + '">' + esc(t.name) + '</button>';
+    });
+    myTemplates().forEach(function(t, i){
+      h += '<button class="chip mine" data-mine="' + i + '">' + esc(t.name) + '<span class="x" data-del="' + i + '">×</span></button>';
+    });
+    box.innerHTML = h;
+    box.querySelectorAll('[data-tpl]').forEach(function(b){
+      b.onclick = function(){ setRules(TEMPLATES[+b.getAttribute('data-tpl')].rules); calc(); };
+    });
+    box.querySelectorAll('[data-mine]').forEach(function(b){
+      b.onclick = function(ev){
+        if (ev.target && ev.target.getAttribute && ev.target.getAttribute('data-del') !== null) return;
+        setRules(myTemplates()[+b.getAttribute('data-mine')].rules); calc();
+      };
+      var x = b.querySelector('[data-del]');
+      if (x) x.onclick = function(ev){
+        ev.stopPropagation();
+        var list = myTemplates();
+        list.splice(+x.getAttribute('data-del'), 1);
+        saveMyTemplates(list); renderTemplates(); save();
+      };
+    });
+  }
+
+  /* ---- 本地保存 ---- */
+  var KEY = 'coudan-calc-v1';
+  function save(){
+    try{
+      var state = {
+        wanted: [], ruleRows: [],
+        pool: $('pool').value, maxItems: $('maxItems').value,
+        vipOn: $('vipOn').checked, vipOff: $('vipOff').value, vipScope: $('vipScope').value,
+        rmbAmt: $('rmbAmt').value, rmbScope: $('rmbScope').value,
+        shipFee: $('shipFee').value, shipCoupon: $('shipCoupon').value, returnShip: $('returnShip').value,
+        targetAmt: $('targetAmt').value, targetMode: $('targetMode').value
+      };
+      wantedList.querySelectorAll('.wanted-row').forEach(function(r){
+        state.wanted.push([r.querySelector('.wname').value, r.querySelector('.wprice').value, r.querySelector('.wqty').value]);
+      });
+      ruleList.querySelectorAll('.rule-row').forEach(function(r){
+        state.ruleRows.push([r.querySelector('.rscope').value, r.querySelector('.rtext').value]);
+      });
+      localStorage.setItem(KEY, JSON.stringify(state));
+    }catch(e){}
+  }
+  function load(){
+    var s = null;
+    try{ s = JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){}
+    if (s && (s.wanted || []).length){
+      s.wanted.forEach(function(w){ addWantedRow(w[0], w[1], w[2]); });
+      (s.ruleRows || []).forEach(function(r){ addRuleRow(r[0], r[1]); });
+      $('pool').value = s.pool || '';
+      $('maxItems').value = s.maxItems || 6;
+      $('vipOn').checked = !!s.vipOn; $('vipOff').value = s.vipOff || 95; $('vipScope').value = s.vipScope || 'all';
+      $('rmbAmt').value = s.rmbAmt || ''; $('rmbScope').value = s.rmbScope || 'all';
+      $('shipFee').value = s.shipFee || ''; $('shipCoupon').value = s.shipCoupon || ''; $('returnShip').value = s.returnShip || '';
+      $('targetAmt').value = s.targetAmt || ''; $('targetMode').value = s.targetMode || 'filler';
+    } else {
+      // 首次打开给一个示例，点开就能看到完整结果长什么样
+      addWantedRow('示例·蓝牙耳机', '280', 1);
+      addRuleRow('all', '每满300减40');
+      $('pool').value = ['纸巾 5', '垃圾袋 9.9', '棉签 12', '袜子 15', '毛巾 19.9', '洗衣皂 25'].join('\n');
+      $('maxItems').value = 6;
+    }
+  }
+
+  function calc(){
+    render(solve(readInput()));
+  }
+
+  /* ---- 绑定 ---- */
+  $('addWanted').onclick = function(){ addWantedRow('', '', 1); save(); };
+  $('addRule').onclick = function(){ addRuleRow('all', ''); save(); };
+  $('parsePaste').onclick = function(){
+    var r = parseShareText($('pasteBox').value);
+    var info = $('pasteInfo');
+    if (!r.items.length && !r.rules.length){
+      info.textContent = '没认出商品名或满减规则。整段分享文案粘进来的识别率最高；如果只有链接，价格和规则得手动填（浏览器里的网页抓不到淘宝数据）。';
+      return;
+    }
+    if (r.items.length){
+      wantedList.innerHTML = '';
+      r.items.forEach(function(it){ addWantedRow(it.name, it.price, 1); });
+      refreshTotal();
+    }
+    if (r.rules.length) setRules(r.rules);
+    var noPrice = r.items.filter(function(it){ return !it.price; }).length;
+    var msg = '认出 ' + r.items.length + ' 个商品、' + r.rules.length + ' 条满减规则';
+    if (r.hasLink) msg += '（含 ' + r.links.length + ' 个链接）';
+    if (noPrice) msg += '；其中 ' + noPrice + ' 个商品没读到价格，请在下面就手补一下';
+    info.textContent = msg;
+    save(); calc();
+  };
+  $('clearPaste').onclick = function(){ $('pasteBox').value = ''; $('pasteInfo').textContent = ''; };
+  $('saveTemplate').onclick = function(){
+    var rows = [];
+    ruleList.querySelectorAll('.rule-row').forEach(function(r){
+      var t = r.querySelector('.rtext').value.trim();
+      if (t) rows.push({ scope: r.querySelector('.rscope').value, text: t });
+    });
+    if (!rows.length){ alert('先写一条规则再存模板'); return; }
+    var name = prompt('给这个模板起个名字（例如：我的常买店铺券）', rows.map(function(r){ return r.text; }).join(' / '));
+    if (!name) return;
+    var list = myTemplates();
+    list.push({ name: name, rules: rows });
+    saveMyTemplates(list);
+    renderTemplates();
+  };
+  $('presetBtn').onclick = function(){
+    $('pool').value = ['纸巾 5', '垃圾袋 9.9', '棉签 12', '袜子 15', '毛巾 19.9', '洗衣皂 25',
+                       '收纳袋 29.9', '牙刷 35', '拖鞋 39.9'].join('\n');
+    save();
+  };
+  $('clearPoolBtn').onclick = function(){ $('pool').value = ''; save(); };
+  ['pool', 'maxItems', 'rmbAmt', 'shipFee', 'shipCoupon', 'returnShip', 'targetAmt'].forEach(function(id){
+    $(id).addEventListener('input', save);
+  });
+  ['vipOn', 'vipScope', 'rmbScope', 'targetMode', 'vipOff'].forEach(function(id){
+    $(id).addEventListener('change', save);
+    $(id).addEventListener('input', save);
+  });
+  $('calcBtn').onclick = function(){
+    calc();
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  renderTemplates();
+  load();
+  refreshTotal();
+  $('calcBtn').click();
+}
+
+if (typeof document !== 'undefined' && typeof window !== 'undefined'){
+  document.addEventListener('DOMContentLoaded', initUI);
+}
+</script>
+</body>
+</html>
